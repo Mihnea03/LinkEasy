@@ -1,4 +1,5 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import RedirectResponse
 import validators
 import string
 from random import choices
@@ -19,6 +20,8 @@ def get_db():
         
 def raise_bad_request(message):
     raise HTTPException(status_code=400, detail=message)
+
+# def raise_not_found(request):
 
 @app.post("/url", response_model=schemas.URLInfo)
 def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
