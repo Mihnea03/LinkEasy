@@ -10,10 +10,6 @@ from .keygen import create_key
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
 
-KEY_LENGTH = 5
-ADMIN_KEY_LENGTH = 8
-
-
 def get_db():
     db = SessionLocal()
     try:
@@ -33,20 +29,20 @@ def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
     if not validators.url(url.target_url):
         raise_bad_request("Your provided URL is not valid!")
     
-    key = create_key(KEY_LENGTH)
-    secret_key = create_key(ADMIN_KEY_LENGTH)
-    db_url = models.URL(
-        target_url=url.target_url, key=key, secret_key=secret_key
-    )
+    # key = create_key(KEY_LENGTH)
+    # secret_key = create_key(ADMIN_KEY_LENGTH)
+    # db_url = models.URL(
+    #     target_url=url.target_url, key=key, secret_key=secret_key
+    # )
 
-    db.add(db_url)
-    db.commit()
+    # db.add(db_url)
+    # db.commit()
 
-    db.refresh(db_url)
-    db_url.url = key
-    db_url.admin_url = secret_key
+    # db.refresh(db_url)
+    # db_url.url = key
+    # db_url.admin_url = secret_key
 
-    return db_url
+    # return db_url
 
 @app.get("/{url_key}")
 def forward_to_target_url(
