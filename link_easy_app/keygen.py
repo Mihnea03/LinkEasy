@@ -1,6 +1,6 @@
 import string
 import random
-import crud
+from crud import get_db_url_by_key
 from sqlalchemy.orm import Session
 
 KEY_LENGTH = 5
@@ -13,7 +13,7 @@ def create_key(len: int) -> str:
 def create_unique_key(db: Session) -> str:
     key = create_key(KEY_LENGTH)
 
-    while crud.get_db_url_by_key(db, key):
+    while get_db_url_by_key(db, key):
         key = create_key(KEY_LENGTH)
     
     return key

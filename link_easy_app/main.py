@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from . import schemas, models
 from .database import engine, SessionLocal
 from .keygen import create_key
-from .crud import create_db_url
+from .crud import create_db_url, get_db_url_by_key
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -31,6 +31,8 @@ def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
         raise_bad_request("Your provided URL is not valid!")
     
     db_url = create_db_url(db, url)
+    db_url.url = db_url.key
+    db_url.admin_url = db_url.secret_key
     return db_url
 
 @app.get("/{url_key}")
@@ -39,11 +41,7 @@ def forward_to_target_url(
     request: Request,
     db: Session = Depends(get_db)
     ):
-    db_url = (
-        db.query(models.URL)
-        .filter(models.URL.key == url_key, models.URL.is_active)
-        .first()
-    )
+    db_url = get_db_url_by_key(url_key=url_key)
     if db_url:
         return RedirectResponse(url=db_url.target_url)
     else:
