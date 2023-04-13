@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from . import schemas, models
 from .database import engine, SessionLocal
-from .keygen import create_key
 from .crud import create_db_url, get_db_url_by_key
 
 app = FastAPI()
@@ -41,7 +40,7 @@ def forward_to_target_url(
     request: Request,
     db: Session = Depends(get_db)
     ):
-    db_url = get_db_url_by_key(url_key=url_key)
+    db_url = get_db_url_by_key(db=db, url_key=url_key)
     if db_url:
         return RedirectResponse(url=db_url.target_url)
     else:

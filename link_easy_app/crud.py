@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
-from . import schemas, models
-from keygen import KEY_LENGTH, ADMIN_KEY_LENGTH, create_unique_key, create_key
+from . import schemas, models, keygen
 
 def get_db_url_by_key(db: Session, url_key:str) -> models.URL:
     return (
@@ -11,8 +10,8 @@ def get_db_url_by_key(db: Session, url_key:str) -> models.URL:
     )
 
 def create_db_url (db: Session, url:schemas.URLBase) -> models.URL:
-    key = create_unique_key(db)
-    secret_key = f"{key}_{create_key(ADMIN_KEY_LENGTH)}"
+    key = keygen.create_unique_key(db)
+    secret_key = f"{key}_{keygen.create_key(8)}"
 
     db_url = models.URL(
         target_url=url.target_url, key=key, secret_key=secret_key
