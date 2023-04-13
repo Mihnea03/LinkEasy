@@ -1,15 +1,18 @@
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 import validators
-import string
-from random import choices
 from sqlalchemy.orm import Session
 
 from . import schemas, models
 from .database import engine, SessionLocal
+from .keygen import create_key
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
+
+KEY_LENGTH = 5
+ADMIN_KEY_LENGTH = 8
+
 
 def get_db():
     db = SessionLocal()
@@ -30,8 +33,8 @@ def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
     if not validators.url(url.target_url):
         raise_bad_request("Your provided URL is not valid!")
     
-    # key = "".join(choices(string.ascii_uppercase, k=5))
-    # secret_key = "".join(choices(string.ascii_uppercase, k=8))
+    key = create_key(KEY_LENGTH)
+    secret_key = create_key(ADMIN_KEY_LENGTH)
     db_url = models.URL(
         target_url=url.target_url, key=key, secret_key=secret_key
     )
