@@ -9,6 +9,13 @@ def get_db_url_by_key(db: Session, url_key:str) -> models.URL:
         .first()
     )
 
+def get_db_url_by_secret_key(db: Session, secret_key: str) -> models.URL:
+    return (
+        db.query(models.URL)
+        .filter(models.URL.secret_key == secret_key, models.URL.is_active)
+        .first()
+    )
+
 def create_db_url (db: Session, url:schemas.URLBase) -> models.URL:
     key = keygen.create_unique_key(db)
     secret_key = f"{key}_{keygen.create_key(8)}"
@@ -20,3 +27,7 @@ def create_db_url (db: Session, url:schemas.URLBase) -> models.URL:
     db.commit()
     db.refresh(db_url)
     return db_url
+
+def set_db_url (db_url: models.URL):
+    db_url.url = db_url.key
+    db_url.admin_url = db_url.secret_key
