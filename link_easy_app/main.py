@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from . import schemas, models
 from .database import engine, SessionLocal
-from .crud import create_db_url, get_db_url_by_key, get_db_url_by_secret_key, set_db_url
+from .crud import create_db_url, get_db_url_by_key, get_db_url_by_secret_key, set_db_url, update_db_clicks
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -41,6 +41,7 @@ def forward_to_target_url(
     ):
     db_url = get_db_url_by_key(db=db, url_key=url_key)
     if db_url:
+        update_db_clicks(db, db_url)
         return RedirectResponse(url=db_url.target_url)
     else:
         raise_not_found(request)
