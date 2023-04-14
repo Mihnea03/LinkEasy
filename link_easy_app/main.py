@@ -3,9 +3,8 @@ from fastapi.responses import RedirectResponse
 import validators
 from sqlalchemy.orm import Session
 
-from . import schemas, models
+from . import schemas, models, crud
 from .database import engine, SessionLocal
-from .crud import create_db_url, get_db_url_by_key, get_db_url_by_secret_key, set_db_url, update_db_clicks, delete_db_url_by_secret_key
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -29,8 +28,8 @@ def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
     if not validators.url(url.target_url):
         raise_bad_request("Your provided URL is not valid!")
     
-    db_url = create_db_url(db, url)
-    set_db_url(db_url=db_url)
+    db_url = crud.create_db_url(db, url)
+    crud.set_db_url(db_url=db_url)
     return db_url
 
 @app.get("/{url_key}")
@@ -39,9 +38,9 @@ def forward_to_target_url(
     request: Request,
     db: Session = Depends(get_db)
     ):
-    db_url = get_db_url_by_key(db=db, url_key=url_key)
+    db_url = crud.get_db_url_by_key(db=db, url_key=url_key)
     if db_url:
-        update_db_clicks(db, db_url)
+        crud.update_db_clicks(db, db_url)
         return RedirectResponse(url=db_url.target_url)
     else:
         raise_not_found(request)
@@ -55,8 +54,8 @@ def get_url_info(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    if db_url := get_db_url_by_secret_key(db= db, secret_key= secret_key):
-        set_db_url(db_url=db_url)
+    if db_url := crud.get_db_url_by_secret_key(db= db, secret_key= secret_key):
+        crud.set_db_url(db_url=db_url)
         return db_url
     else:
         raise_not_found(request)
@@ -67,7 +66,7 @@ def delete_url(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    if db_url := delete_db_url_by_secret_key(db, secret_key):
+    if db_url := crud.delete_db_url_by_secret_key(db, secret_key):
         message = f"Succesfully deleted shortened URL for: '{db_url.target_url}'"
         return { "detail": message }
     else:
