@@ -31,3 +31,9 @@ def create_db_url (db: Session, url:schemas.URLBase) -> models.URL:
 def set_db_url (db_url: models.URL):
     db_url.url = db_url.key
     db_url.admin_url = db_url.secret_key
+
+def update_db_clicks (db: Session, db_url: schemas.URL) -> models.URL:
+    db_url.clicks += 1
+    db.commit()
+    db.refresh(db_url)
+    return db_url
