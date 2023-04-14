@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from . import schemas, models
 from .database import engine, SessionLocal
-from .crud import create_db_url, get_db_url_by_key, get_db_url_by_secret_key, set_db_url, update_db_clicks
+from .crud import create_db_url, get_db_url_by_key, get_db_url_by_secret_key, set_db_url, update_db_clicks, delete_db_url_by_secret_key
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -58,5 +58,17 @@ def get_url_info(
     if db_url := get_db_url_by_secret_key(db= db, secret_key= secret_key):
         set_db_url(db_url=db_url)
         return db_url
+    else:
+        raise_not_found(request)
+
+@app.delete("/{secret_key}")
+def delete_url(
+    secret_key: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    if db_url := delete_db_url_by_secret_key(db, secret_key):
+        message = f"Succesfully deleted shortened URL for: '{db_url.target_url}'"
+        return { "detail": message }
     else:
         raise_not_found(request)
